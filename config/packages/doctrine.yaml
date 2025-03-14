@@ -18,12 +18,35 @@ doctrine:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
         mappings:
-            App:
-                type: attribute
+            Domain\Shared\Entity:
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
-                alias: App
+                type: xml
+                dir: '%kernel.project_dir%/src/Domain/Shared/Entity'
+                prefix: 'Domain\Shared\Entity'
+
+            Domain\Category\Entity:
+                is_bundle: false
+                type: xml
+                dir: '%kernel.project_dir%/src/Infrastructure/Category/Doctrine/Mapping/Entity'
+                prefix: 'Domain\Category\Entity'
+
+            Domain\Category\ValueObject:
+                is_bundle: false
+                type: xml
+                dir: '%kernel.project_dir%/src/Infrastructure/Category/Doctrine/Mapping/ValueObject'
+                prefix: 'Domain\Category\ValueObject'
+
+            Domain\Authentication\Entity:
+                is_bundle: false
+                type: xml
+                dir: '%kernel.project_dir%/src/Infrastructure/Authentication/Doctrine/Mapping/Entity'
+                prefix: 'Domain\Authentication\Entity'
+
+            Domain\Authentication\ValueObject:
+                is_bundle: false
+                type: xml
+                dir: '%kernel.project_dir%/src/Infrastructure/Authentication/Doctrine/Mapping/ValueObject'
+                prefix: 'Domain\Authentication\ValueObject'
         controller_resolver:
             auto_mapping: false
 

@@ -1,0 +1,18 @@
+Domain\Category\Entity\Category:
+  category (template):
+    id: <uuid()>
+    title: <string()>
+    description: <string()>
+    icon: <string()>
+    status: <bool()>
+    created_at: <dateTimeThisYear('now')>
+
+Domain\Authentication\Entity\User:
+  user (template):
+    name: user<current()>5
+    email: user_<current()>\@innotechmarkt.shop
+    password: \$2y\$13\$PzaAzoYYBl1VyuAU9M/3GuFQaOgO2vyHct1iN0b4vULoIXtcBICuu # 000000
+
+    # Timestamp
+    created_at: <dateTimeThisYear()>
+    updated_at: ~
