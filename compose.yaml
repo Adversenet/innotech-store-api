@@ -1,74 +1,79 @@
 services:
-    database:
-        image: mariadb:10.7.3
-        environment:
-            MARIADB_USER: root
-            MARIADB_ROOT_PASSWORD: root
-            MARIADB_DATABASE: app
-            MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 'no'
-        volumes:
-            - database_data:/var/lib/mysql:rw
-            - ./var/mysql:/var/www/var
-        networks:
-            - innotech_network
-    
-    nginx:
-        build: ./docker/nginx
-        ports:
-            - "8000:80"
-        volumes:
-            - ./public:/var/www/public:delegated
-        depends_on:
-            - php
-        networks:
-            - innotech_network
-    
-    node:
-        user: '${USER_ID}:${GROUP_ID}'
-        build: ./docker/node
-        command: npm run watch
-        working_dir: /home/node/app
-        volumes:
-            - ./:/home/node/app
-        networks:
-            - innotech_network
-    
-    php:
-        user: '${USER_ID}:${GROUP_ID}'
-        build: ./docker/php
-        volumes:
-            - .:/var/www:delegated
-        depends_on:
-            - database
-        networks:
-            - innotech_network
-    
-    adminer:
-        image: adminer:latest
-        depends_on:
-            - database
-        environment:
-            APP_ENV: dev
-            ADMINER_DESIGN: pepa-linha
-            ADMINER_DEFAULT_SERVER: database
-        ports:
-            - "8082:8080"
-        networks:
-            - innotech_network
-    
-    mailer:
-        image: axllent/mailpit
-        ports:
-            - "1025:1025"
-            - "8025:8025"
-        environment:
-            MP_SMTP_AUTH_ACCEPT_ANY: 1
-            MP_SMTP_AUTH_ALLOW_INSECURE: 1
-        networks:
-            - innotech_network
+  database:
+    image: mysql:8.0
+    container_name: innotech_database
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: innotech_db
+      MYSQL_ALLOW_EMPTY_ROOT_PASSWORD: 'no'
+    volumes:
+      - mysql-data:/var/lib/mysql:rw
+      - ./var/mysql:/var/www/var
+      - ./tools/config/mysql.conf:/etc/mysql/conf.d
+    labels:
+      com.symfony.server.service-prefix: 'DATABASE'
 
-networks:
-    innotech_network:
+  web:
+    image: nginx:alpine
+    container_name: innotech_nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www:delegated
+      - ./tools/config/nginx.conf:/etc/nginx/conf.d/default.conf
+    links:
+      - php
+
+  php:
+    user: '${USER_ID}:${GROUP_ID}'
+    container_name: innotech_php
+    restart: unless-stopped
+    build:
+      context: ./tools/docker/php
+    volumes:
+      - .:/var/www:delegated
+    depends_on:
+      - database
+
+  ## Development Tools
+  maildev:
+    image: mailhog/mailhog
+    container_name: innotech_maildev
+    ports:
+      - "1080:8025"
+    labels:
+      com.symfony.server.service-prefix: 'MAILER'
+
+  adminer:
+    image: adminer:4.8.1
+    container_name: innotech_adminer
+    restart: unless-stopped
+    depends_on:
+      - database
+    environment:
+      APP_ENV: dev
+      ADMINER_DESIGN: pepa-linha
+      ADMINER_DEFAULT_SERVER: database
+    ports:
+      - "8082:8080"
+
+  node:
+    container_name: innotech_node
+    restart: unless-stopped
+    user: '${USER_ID}:${GROUP_ID}'
+    build:
+      context: ./tools/docker/node
+    command: yarn run watch
+    working_dir: /home/node/app
+    volumes:
+      - ./:/home/node/app
+    ports:
+      - "3000:3000"
 
 volumes:
-    database_data:
+  mysql-data:
+    driver:
+      local

@@ -1,0 +1,13 @@
+include:
+  - templates.yaml
+
+Domain\Category\Entity\Category:
+  category{1..10} (extends category):
+
+Domain\Authentication\Entity\User:
+  user_admin (extends user):
+    username: admin
+    email: admin\@admin.com
+    roles: ['ROLE_ADMIN']
+
+  user{1..5} (extends user):
